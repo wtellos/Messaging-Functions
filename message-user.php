@@ -1,6 +1,6 @@
-<?php 
+<?php
 
-function message_user_function() {
+function send_message_button_shortcode() {
     // Get current user information
     $current_user = wp_get_current_user();
     $current_user_name = $current_user->display_name;
@@ -62,7 +62,8 @@ function message_user_function() {
                 action: 'send_user_message',
                 profile_user_id: profileUserId,
                 subject: subject,
-                message: message
+                message: message,
+                security: '<?php echo wp_create_nonce("send_message_nonce"); ?>'
             },
             success: function(response) {
                 if (response.success) {
@@ -81,10 +82,15 @@ function message_user_function() {
     <?php
     return ob_get_clean();
 }
-add_shortcode('send_user_message', 'message_user_function');
+add_shortcode('send_user_message', 'send_message_button_shortcode');
 
 function handle_send_user_message() {
-    // Check if the user is logged in and required fields are provided
+    // Verify nonce and validate input
+    if (!check_ajax_referer('send_message_nonce', 'security', false)) {
+        wp_send_json_error(['message' => 'Security check failed.']);
+        return;
+    }
+
     if (!is_user_logged_in() || empty($_POST['profile_user_id']) || empty($_POST['subject']) || empty($_POST['message'])) {
         wp_send_json_error(['message' => 'Please complete all fields.']);
         return;
@@ -95,38 +101,59 @@ function handle_send_user_message() {
     $message_body = sanitize_textarea_field($_POST['message']);
     $current_user = wp_get_current_user();
 
-    // Get the recipient's email
-    $recipient_email = get_userdata($profile_user_id)->user_email;
-    if (!$recipient_email) {
+    // Get recipient
+    $recipient = get_userdata($profile_user_id);
+    if (!$recipient) {
         wp_send_json_error(['message' => 'Recipient not found.']);
         return;
     }
 
-    // Prepare email
-        // $email_subject = "New Message: " . $subject;
-        // $email_message = "Message from " . $current_user->display_name . ":\n\n" . $message_body;
-        // $headers = ['From: Way2Go eLearning <e-learning@way2go-project.eu>'];
+    // Get sender's first name
+    $sender_first_name = get_user_meta($current_user->ID, 'first_name', true);
+    $sender_display_name = !empty($sender_first_name) ? $sender_first_name : $current_user->display_name;
 
-    // Prepare email 2
-    // Get the sender's profile URL
+    // Configure email
+    $site_name = get_bloginfo('name');
+    $site_email = 'noreply@' . parse_url(home_url(), PHP_URL_HOST);
     $sender_profile_url = esc_url(get_author_posts_url($current_user->ID));
 
-    // Prepare the email content with a note not to reply directly
-    $email_subject = "New Message: " . $subject;
-    $email_message = "Message from " . $current_user->display_name . ":<br>\n\n" . $message_body . "<br>\n\n---\n<br><b>Please do not reply to this email.</b>
-    <br> Instead, use the following link to view the sender's profile and get in touch:\n";
-    $email_message .= "<b><a href='" . $sender_profile_url . "' target='_blank'>View sender's Profile</a></b>";
+    // Format email headers
+    $from_header = sprintf(
+        '%1$s via %2$s <%3$s>',
+        $sender_display_name,
+        $site_name,
+        $site_email
+    );
 
-    $headers = ['From: Way2Go eLearning <platform@way2go-project.eu>', 'Content-Type: text/html; charset=UTF-8'];
-    // Send the email
-    if (wp_mail($recipient_email, $email_subject, $email_message, $headers)) {
+    $email_subject = "[Message] " . $subject;
+    $email_message = sprintf(
+        "You've received a message from %s:\n\n%s\n\n---\n\n" .
+        "<b>Do not reply to this email.</b>\n" .
+        "View the sender's profile to respond: %s",
+        $sender_display_name,
+        wpautop($message_body),
+        '<a href="' . $sender_profile_url . '">View Profile</a>'
+    );
+
+    $headers = [
+        'From: ' . $from_header,
+        'Reply-To: ' . $site_email,
+        'Content-Type: text/html; charset=UTF-8'
+    ];
+
+    // Send email
+    $sent = wp_mail(
+        $recipient->user_email,
+        $email_subject,
+        $email_message,
+        $headers
+    );
+
+    if ($sent) {
         wp_send_json_success();
     } else {
-        wp_send_json_error(['message' => 'Failed to send email.']);
+        error_log('Email failed: ' . print_r(error_get_last(), true));
+        wp_send_json_error(['message' => 'Failed to send message.']);
     }
 }
 add_action('wp_ajax_send_user_message', 'handle_send_user_message');
-
-
-
-
