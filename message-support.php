@@ -1,12 +1,12 @@
 <?php
 /*
- * Plugin Name:       CARDET Send Message Modal
+ * Plugin Name: CARDET Send Message to support
  * Description: Logged-in users can send a message to Administration Email Address! - Shortcode placed on footer.
- * Version:           2.0
- * Author:            CARDET Development Team
- * Author URI:        https://cardet.org
- * License:           GPL v2 or later
- * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Version: 2.0
+ * Author: CARDET Development Team
+ * Author URI: https://cardet.org
+ * License: GPL v2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  *
  */
 // Send message to support while logged in
