@@ -1,6 +1,14 @@
-<?php 
-/////////////////////////////////////////////////////////////////////////////
-
+<?php
+/*
+ * Plugin Name:       CARDET Send Message Modal
+ * Description: Logged-in users can send a message to Administration Email Address! - Shortcode placed on footer.
+ * Version:           2.0
+ * Author:            CARDET Development Team
+ * Author URI:        https://cardet.org
+ * License:           GPL v2 or later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ *
+ */
 // Send message to support while logged in
 function send_message_button_shortcode() {
     // Get current user information
@@ -15,13 +23,13 @@ function send_message_button_shortcode() {
     <!-- Button to trigger modal -->
     <button class="uk-button uk-button-text"
             onclick="<?php echo $is_logged_in ? "UIkit.modal('#send-message-modal').show()" : "notifyLoginRequired()" ?>">
-        Send a Message
+         <span uk-icon="mail" style="transform: translateY(-1px);"></span>&nbsp;<span class="">Get support</span>
     </button>
 
     <!-- Modal Structure (UIkit) --> 
     <div id="send-message-modal" uk-modal>
         <div class="uk-modal-dialog uk-modal-body">
-            <h4 class="uk-modal-title">Send a Message</h4>
+            <h4 class="uk-modal-title el-title uk-heading-small uk-text-primary">Message the support team</h4>
 
             <!-- Display sender's name -->
             <div class="uk-margin">
@@ -87,7 +95,7 @@ function send_message_button_shortcode() {
     <?php
     return ob_get_clean();
 }
-add_shortcode('send_message', 'send_message_button_shortcode');
+add_shortcode('send_message_to_support', 'send_message_button_shortcode');
 
 
 // Handle the messaging request
@@ -127,6 +135,3 @@ function handle_send_user_message() {
 }
 add_action('wp_ajax_send_user_message', 'handle_send_user_message');
 
-
-
-/////////////////////////////////////////////////////////////////////////////
