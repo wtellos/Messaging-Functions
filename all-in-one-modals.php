@@ -1,9 +1,8 @@
-
 <?php
 /*
  * Plugin Name: CARDET Send Message to support
- * Description: Logged-in users can send a message to Administration Email Address! - Shortcode placed on footer.
- * Version: 2.1
+ * Description: Logged-in users can ask for support or report abuse to Administration mail - Shortcodes: send_message_to_support, send_report_to_support.
+ * Version: 2.2
  * Author: CARDET Development Team
  * Author URI: https://cardet.org
  * License: GPL v2 or later
@@ -67,7 +66,7 @@ function send_message_button_shortcode() {
 
             <!-- Modal Footer -->
             <div class="uk-modal-footer uk-text-right">
-                <button class="uk-button uk-button-primary uk-modal-close">Cancel</button>
+                <button class="uk-button uk-button-secondary uk-modal-close">Cancel</button>
                 <button class="uk-button uk-button-default" onclick="sendSupportMessage()">Send</button>
             </div>
         </div>
