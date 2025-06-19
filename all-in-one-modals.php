@@ -1,6 +1,6 @@
 <?php
 /*
- * Plugin Name: CARDET Send Message to support
+ * Plugin Name: CARDET Send message to support v2
  * Description: Logged-in users can ask for support or report abuse to Administration mail - Shortcodes: send_message_to_support, send_report_to_support.
  * Version: 2.2
  * Author: CARDET Development Team
