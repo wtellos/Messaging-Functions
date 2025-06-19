@@ -8,7 +8,6 @@
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
-
 // Common JavaScript functions
 function cardet_message_common_js() {
     ?>
@@ -66,7 +65,7 @@ function send_message_button_shortcode() {
 
             <!-- Modal Footer -->
             <div class="uk-modal-footer uk-text-right">
-                <button class="uk-button uk-button-secondary uk-modal-close">Cancel</button>
+                <button class="uk-button uk-button-primary uk-modal-close">Cancel</button>
                 <button class="uk-button uk-button-default" onclick="sendSupportMessage()">Send</button>
             </div>
         </div>
@@ -74,8 +73,8 @@ function send_message_button_shortcode() {
 
     <script>
         function sendSupportMessage() {
-            const subject = document.getElementById('support-subject').value;
-            const message = document.getElementById('support-body').value;
+            const subject = document.getElementById('support-subject');
+            const message = document.getElementById('support-body');
             const postId = document.getElementById('support-post-id').value;
 
             jQuery.ajax({
@@ -83,14 +82,17 @@ function send_message_button_shortcode() {
                 type: 'POST',
                 data: {
                     action: 'send_user_message',
-                    subject: subject,
-                    message: message,
+                    subject: subject.value,
+                    message: message.value,
                     post_id: postId
                 },
                 success: function(response) {
                     if (response.success) {
                         UIkit.notification({message: 'Message sent successfully!', status: 'success'});
                         UIkit.modal('#send-message-modal').hide();
+                        // Clear form fields
+                        subject.value = '';
+                        message.value = '';
                     } else {
                         UIkit.notification({message: response.data.message || 'Failed to send message.', status: 'danger'});
                     }
@@ -100,6 +102,12 @@ function send_message_button_shortcode() {
                 }
             });
         }
+        
+        // Reset form when modal opens
+        UIkit.util.on('#send-message-modal', 'show', function() {
+            document.getElementById('support-subject').value = '';
+            document.getElementById('support-body').value = '';
+        });
     </script>
     <?php
     return ob_get_clean();
@@ -161,8 +169,8 @@ function send_report_to_support() {
 
     <script>
         function sendReportMessage() {
-            const subject = document.getElementById('report-subject').value;
-            const message = document.getElementById('report-body').value;
+            const subject = document.getElementById('report-subject');
+            const message = document.getElementById('report-body');
             const postId = document.getElementById('report-post-id').value;
 
             jQuery.ajax({
@@ -170,14 +178,16 @@ function send_report_to_support() {
                 type: 'POST',
                 data: {
                     action: 'send_report_message',
-                    subject: subject,
-                    message: message,
+                    subject: subject.value,
+                    message: message.value,
                     post_id: postId
                 },
                 success: function(response) {
                     if (response.success) {
                         UIkit.notification({message: 'Report submitted successfully!', status: 'success'});
                         UIkit.modal('#send-report-modal').hide();
+                        // Clear form fields (but keep the default subject)
+                        message.value = '';
                     } else {
                         UIkit.notification({message: response.data.message || 'Failed to submit report.', status: 'danger'});
                     }
@@ -187,6 +197,12 @@ function send_report_to_support() {
                 }
             });
         }
+        
+        // Reset form when modal opens (but keep default subject)
+        UIkit.util.on('#send-report-modal', 'show', function() {
+            document.getElementById('report-subject').value = 'Report about initiative';
+            document.getElementById('report-body').value = '';
+        });
     </script>
     <?php
     return ob_get_clean();
@@ -219,7 +235,7 @@ function handle_send_user_message() {
     if ($post_id) {
         $post_title = get_the_title($post_id);
         $post_url = get_permalink($post_id);
-        $email_message .= "\n\n---\nRelated to post: " . $post_title . "\nPost URL: " . $post_url;
+        $email_message .= "\n\n---\nRelated to post: \"$post_title\" Post ID: $post_id\nPost URL: " . $post_url;
     }
 
     $headers = ['From: ' . $site_name . ' <' . $recipient_email . '>'];
@@ -231,6 +247,7 @@ function handle_send_user_message() {
     }
 }
 add_action('wp_ajax_send_user_message', 'handle_send_user_message');
+
 
 // Handle report message
 function handle_send_report_message() {
@@ -258,7 +275,7 @@ function handle_send_report_message() {
     if ($post_id) {
         $post_title = get_the_title($post_id);
         $post_url = get_permalink($post_id);
-        $email_message .= "\n\n---\nReported post: " . $post_title . "\nPost URL: " . $post_url;
+        $email_message .= "\n\n---\nReported post: \"$post_title\" Post ID: $post_id\nPost URL: " . $post_url;
     }
 
     $headers = ['From: ' . $site_name . ' <' . $recipient_email . '>'];
